@@ -1,6 +1,7 @@
 from PyPDF2 import PdfReader, PdfWriter
 import sys
 
+
 def merge_pdfs(paths, output):
     pdf_writer = PdfWriter()
 
@@ -20,13 +21,19 @@ def copy_range(path, start_page, end_page, name_of_copy):
     if end_page >= len(pdf.pages):
         end_page = len(pdf.pages) - 1
 
-    pdf_writer = PdfWriter()    
+    pdf_writer = PdfWriter()
     for page in range(start_page, end_page + 1):
         pdf_writer.add_page(pdf.pages[page])
 
     output = f'{name_of_copy}_copy.pdf'
     with open(output, 'wb') as output_pdf:
         pdf_writer.write(output_pdf)
+
+
+def get_pages(path):
+    pdf = PdfReader(path)
+    return len(pdf.pages)
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
@@ -49,7 +56,7 @@ if __name__ == '__main__':
             sys.exit(1)
 
         for input_file in input_files:
-            copy_range(input_file, start-1, end-1, name_of_copy=input_file.split('\\')[-1].split('.')[0])
+            copy_range(input_file, start - 1, end - 1, name_of_copy=input_file.split('\\')[-1].split('.')[0])
             print(f'Copied {input_file} from page {start} to {end}')
     else:
         print("Invalid operation. Use 'merge' or 'copy'.")
