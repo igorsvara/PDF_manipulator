@@ -3,8 +3,11 @@ from tkinter import messagebox
 
 
 class RangeDialog(tk.Toplevel):
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self, parent, f_index):
+        super().__init__(parent.master)
+        self.parent_instance = parent
+        self.file_index = f_index
+
         self.title("Update Page Range")
         self.resizable(False, False)
 
@@ -33,13 +36,11 @@ class RangeDialog(tk.Toplevel):
             new_from_page = int(self.entry_from.get())
             new_to_page = int(self.entry_to.get())
             if new_from_page <= new_to_page:
-                self.destroy()
-                return new_from_page, new_to_page
+                self.parent_instance.process_dialog_values(self.file_index, (new_from_page, new_to_page))
             else:
                 messagebox.showwarning("Invalid Page Range", "Starting page must be less than or equal to ending page.")
-                self.destroy()
-                return None
         except ValueError:
             messagebox.showwarning("Invalid Input", "Please enter valid integer values.")
-            self.destroy()
-            return None
+
+        self.destroy()
+
