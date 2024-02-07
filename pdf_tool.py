@@ -7,7 +7,7 @@ def merge_pdfs(paths, ranges, output):
     for path in paths:
         f_range = ranges[path]
         pdf_reader = PdfReader(path)
-        for page in range(f_range[0]-1, f_range[1]):
+        for page in range(f_range[0] - 1, f_range[1]):
             pdf_writer.add_page(pdf_reader.pages[page])
 
     with open(output, 'wb') as out:

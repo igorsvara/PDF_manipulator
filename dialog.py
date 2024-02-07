@@ -5,7 +5,7 @@ from tkinter import messagebox
 class RangeDialog(tk.Toplevel):
     def __init__(self, parent, f_index):
         super().__init__(parent.master)
-        self.wm_iconbitmap(bitmap="pdftool_32.ico")
+        self.wm_iconbitmap(bitmap="res/pdftool.ico")
         self.parent_instance = parent
         self.file_index = f_index
 

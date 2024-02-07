@@ -1,7 +1,7 @@
 import os
 
 import tkinter as tk
-from tkinter import filedialog, messagebox, simpledialog
+from tkinter import filedialog, messagebox
 
 from pdf_tool import *
 from dialog import RangeDialog
@@ -11,10 +11,11 @@ class PDFgui:
 
     def __init__(self, master):
 
-        master.wm_iconbitmap(bitmap="pdftool_32.ico")
+        master.wm_iconbitmap(bitmap="res/pdftool.ico")
 
         self.file_array = []  # Initialize the array
         self.page_ranges = {}
+        self.total_page_count = 0
 
         self.master = master
         self.master.title("PDF TOOLS")
@@ -71,6 +72,9 @@ class PDFgui:
         self.file_list = tk.Listbox(self.file_list_frame)
         self.file_list.pack(fill="both", expand=True)
 
+        self.total_page_label = tk.Label(self.file_list_frame, text="Total Pages: 0")
+        self.total_page_label.pack(side="left", padx=(5, 0), pady=(12, 2))
+
     def merge_files(self):
         output_path = filedialog.asksaveasfilename(
             title="Save Merged PDF", defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")]
@@ -91,6 +95,8 @@ class PDFgui:
                 f_npages = get_pages(filename)
                 self.file_array.append(filename)
                 self.page_ranges[filename] = (1, f_npages)
+                self.total_page_count += f_npages
+                self.update_page_count()
                 f_range = f"[{self.page_ranges[filename][0]}-{self.page_ranges[filename][1]}]"
                 self.file_list.insert(tk.END, f"  {f_range:<15}{f_basename}")
 
@@ -99,6 +105,12 @@ class PDFgui:
 
     def remove_files(self):
         index = self.file_list.curselection()[0]
+
+        p_range = self.page_ranges[self.file_array[index]]
+
+        self.total_page_count -= p_range[1] - p_range[0] + 1
+        self.update_page_count()
+
         self.file_list.delete(index)
         del self.page_ranges[self.file_array[index]]  # Remove from the dictionary
         del self.file_array[index]  # Remove from the array
@@ -122,8 +134,13 @@ class PDFgui:
             self.file_array.insert(index + 1, self.file_array.pop(index))  # Update array order
 
     def update_range(self):
-        f_index = self.file_list.curselection()[0]
+        try:
+            f_index = self.file_list.curselection()[0]
+        except IndexError:
+            messagebox.showwarning("Invalid Selection", "Please select a file.")
+            return
         dialog = RangeDialog(self, f_index)  # Keep this as self.master
+        dialog.transient(self.master)  # Makes dialog modal
         self.master.wait_window(dialog)
 
     def process_dialog_values(self, f_index, p_range):
@@ -138,13 +155,23 @@ class PDFgui:
             messagebox.showwarning("Update Cancelled", "Range not valid.")
             return
         if new_from_page <= new_to_page:
+            old_p_range = self.page_ranges[filename]
             self.page_ranges[filename] = p_range
+
             self.file_list.delete(f_index)
             f_range = f"[{new_from_page}-{new_to_page}]"
             self.file_list.insert(f_index, f"  {f_range:<15}{os.path.basename(filename)}")
+
+            self.total_page_count -= old_p_range[1] - old_p_range[0] + 1
+            self.total_page_count += p_range[1] - p_range[0] + 1
+
+            self.update_page_count()
         else:
             messagebox.showwarning("Invalid Page Range",
                                    "Starting page must be less than or equal to ending page.")
+
+    def update_page_count(self):
+        self.total_page_label.config(text=f"Total Pages: {self.total_page_count}")
 
 if __name__ == "__main__":
     root = tk.Tk()
