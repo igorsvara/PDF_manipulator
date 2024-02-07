@@ -11,6 +11,8 @@ class PDFgui:
 
     def __init__(self, master):
 
+        master.wm_iconbitmap(bitmap="pdftool_32.ico")
+
         self.file_array = []  # Initialize the array
         self.page_ranges = {}
 
